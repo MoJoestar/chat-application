@@ -1,1 +1,17 @@
+# Multi-Client Chat Application - Python Dependencies
 
+# Encryption library
+cryptography>=41.0.0
+
+# Testing framework (optional but recommended)
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Note: The following are built-in Python libraries (no installation needed):
+# - socket (networking)
+# - threading (multithreading)
+# - tkinter (GUI - comes with Python)
+# - sqlite3 (database)
+# - json (data formatting)
+# - datetime (timestamps)
+# - logging (error logging)
