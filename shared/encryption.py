@@ -164,4 +164,112 @@ class Encryption:
     
     def get_key(self):
         """
-        Get the encrypt
+        Get the encryption key.
+        
+        Returns:
+            bytes: The encryption key
+        """
+        return self.key
+    
+    def get_key_string(self):
+        """
+        Get the encryption key as a base64 string.
+        
+        Returns:
+            str: Base64 encoded key
+        """
+        return base64.b64encode(self.key).decode('utf-8')
+
+
+# ==================== GLOBAL ENCRYPTION INSTANCE ====================
+
+# Create a default encryption key file if it doesn't exist
+KEY_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'encryption.key')
+
+# Try to load existing key, or generate new one
+if os.path.exists(KEY_FILE):
+    SHARED_KEY = Encryption.load_key_from_file(KEY_FILE)
+    if SHARED_KEY is None:
+        SHARED_KEY = Encryption.generate_key()
+        Encryption.save_key_to_file(SHARED_KEY, KEY_FILE)
+else:
+    SHARED_KEY = Encryption.generate_key()
+    Encryption.save_key_to_file(SHARED_KEY, KEY_FILE)
+
+# Create global encryption instance
+encryptor = Encryption(SHARED_KEY)
+
+log_info(f"Global encryption initialized with shared key from {KEY_FILE}")
+
+
+# ==================== HELPER FUNCTIONS ====================
+
+def encrypt_message(message):
+    """
+    Encrypt a message using the global encryptor.
+    
+    Args:
+        message (str): Message to encrypt
+    
+    Returns:
+        str: Encrypted message as base64 string
+    """
+    return encryptor.encrypt_to_string(message)
+
+
+def decrypt_message(encrypted_message):
+    """
+    Decrypt a message using the global encryptor.
+    
+    Args:
+        encrypted_message (str): Encrypted message as base64 string
+    
+    Returns:
+        str: Decrypted message
+    """
+    return encryptor.decrypt_from_string(encrypted_message)
+
+
+# ==================== TEST CODE ====================
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("Testing Encryption Module")
+    print("=" * 60)
+    
+    # Test encryption
+    print("\n1. Testing encryption...")
+    original = "Hello, this is a secret message!"
+    print(f"Original: {original}")
+    
+    encrypted = encrypt_message(original)
+    print(f"Encrypted: {encrypted}")
+    
+    decrypted = decrypt_message(encrypted)
+    print(f"Decrypted: {decrypted}")
+    
+    if original == decrypted:
+        print("✓ Encryption/Decryption successful!")
+    else:
+        print("✗ Encryption/Decryption failed!")
+    
+    # Test key persistence
+    print("\n2. Testing key persistence...")
+    key1 = encryptor.get_key_string()
+    print(f"Current key: {key1[:20]}...")
+    
+    # Test with different instance
+    print("\n3. Testing with new instance...")
+    enc2 = Encryption(SHARED_KEY)
+    encrypted2 = enc2.encrypt_to_string("Another message")
+    decrypted2 = encryptor.decrypt_from_string(encrypted2)
+    print(f"Cross-instance decryption: {decrypted2}")
+    
+    if decrypted2 == "Another message":
+        print("✓ Key sharing works correctly!")
+    else:
+        print("✗ Key sharing failed!")
+    
+    print("\n" + "=" * 60)
+    print("Encryption test complete!")
+    print("=" * 60)
